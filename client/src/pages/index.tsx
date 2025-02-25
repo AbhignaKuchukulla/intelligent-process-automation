@@ -1,53 +1,121 @@
+import { useState } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
+import { Box, Container, Typography, Button, Grid, Paper } from '@mui/material';
+import { useRouter } from 'next/router';
+import Navbar from '../components/Navbar';
+import DocumentUpload from '../components/DocumentUploader';
+import { uploadDocument } from '../services/apiClient';
 
 export default function Home() {
+  const router = useRouter();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<null | { success: boolean; message: string }>(null);
+
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    setUploadResult(null);
+    
+    try {
+      await uploadDocument(file);
+      setUploadResult({
+        success: true,
+        message: `Document "${file.name}" successfully processed!`,
+      });
+    } catch (error) {
+      setUploadResult({
+        success: false,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const goToDashboard = () => {
+    router.push('/dashboard');
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <>
       <Head>
         <title>Intelligent Process Automation</title>
-        <meta name="description" content="AI-powered process automation" />
+        <meta name="description" content="AI-powered document processing and automation" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* Navbar */}
-      <nav className="bg-white shadow-md py-4 px-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-blue-600">IPA System</h1>
-        <div>
-          <Link href="/login" className="text-gray-700 px-4">Login</Link>
-          <Link href="/register" className="text-blue-600 px-4 font-semibold">Sign Up</Link>
-        </div>
-      </nav>
+      <Navbar />
 
-      {/* Hero Section */}
-      <section className="text-center py-20 bg-blue-600 text-white">
-        <h2 className="text-4xl font-bold">Automate Your Business Processes with AI</h2>
-        <p className="mt-4 text-lg">Leverage OCR, NLP, and AI-powered automation to streamline workflows.</p>
-        <Link href="/dashboard" className="mt-6 inline-block bg-white text-blue-600 px-6 py-3 rounded-lg shadow-md font-semibold">Get Started</Link>
-      </section>
+      <Box component="main" sx={{ py: 8, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+        <Container maxWidth="lg">
+          {/* Ensure parent Grid has container prop */}
+          <Grid container spacing={4} alignItems="center" justifyContent="center">
+            {/* Left Section - Text & Button */}
+            <Grid item xs={12} sm={10} md={6}>
+              <Box sx={{ textAlign: { xs: 'center', md: 'left' }, mb: 4 }}>
+                <Typography variant="h3" color="primary" gutterBottom>
+                  Intelligent Process Automation
+                </Typography>
+                <Typography variant="h5" color="text.secondary" paragraph>
+                  Automate your document workflows with AI-powered solutions.
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  size="large" 
+                  onClick={goToDashboard}
+                  sx={{ mt: 2, fontSize: '1rem', textTransform: 'none' }}
+                >
+                  Go to Dashboard
+                </Button>
+              </Box>
+            </Grid>
 
-      {/* Features Section */}
-      <section className="py-16 px-6 text-center">
-        <h3 className="text-3xl font-semibold text-gray-800">Key Features</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h4 className="text-xl font-bold">OCR Processing</h4>
-            <p className="text-gray-600 mt-2">Extract text from documents and automate data entry.</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h4 className="text-xl font-bold">Natural Language Processing</h4>
-            <p className="text-gray-600 mt-2">Analyze and understand text data with AI.</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h4 className="text-xl font-bold">Workflow Automation</h4>
-            <p className="text-gray-600 mt-2">Automate repetitive tasks and optimize processes.</p>
-          </div>
-        </div>
-      </section>
+            {/* Right Section - Document Upload */}
+            <Grid item xs={12} sm={10} md={6}>
+              <Paper elevation={4} sx={{ p: 4, borderRadius: 3, backgroundColor: '#fff' }}>
+                <Typography variant="h5" color="primary" gutterBottom>
+                  Process a Document
+                </Typography>
+                <Typography variant="body1" color="text.secondary" paragraph>
+                  Upload a document to extract and process information with AI.
+                </Typography>
+                <DocumentUpload onUpload={handleFileUpload} isUploading={isUploading} result={uploadResult} />
+              </Paper>
+            </Grid>
+          </Grid>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white text-center py-4">
-        <p>&copy; {new Date().getFullYear()} IPA System. All rights reserved.</p>
-      </footer>
-    </div>
+          {/* How It Works Section */}
+          <Grid container spacing={4} sx={{ mt: 6 }} justifyContent="center">
+            <Grid item xs={12}>
+              <Paper elevation={2} sx={{ p: 5, borderRadius: 3 }}>
+                <Typography variant="h5" color="primary" gutterBottom align="center">
+                  How It Works
+                </Typography>
+                <Grid container spacing={3} sx={{ mt: 2 }} justifyContent="center">
+                  <Grid item xs={12} sm={6} md={4}>
+                    <Typography variant="h6" align="center">1. Upload Documents</Typography>
+                    <Typography color="text.secondary" align="center">
+                      Upload PDFs, images, forms, and invoices.
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <Typography variant="h6" align="center">2. AI Processing</Typography>
+                    <Typography color="text.secondary" align="center">
+                      Our AI extracts and categorizes data automatically.
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <Typography variant="h6" align="center">3. Automate Workflows</Typography>
+                    <Typography color="text.secondary" align="center">
+                      Create workflows based on extracted data.
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+    </>
   );
 }
