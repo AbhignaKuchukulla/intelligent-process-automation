@@ -1,8 +1,8 @@
-import express from 'express';
-import { processChatbotMessage } from '../controllers/chatbotController.ts';
+const express = require('express');
+const { chatbotController } = require('../controllers/chatbotController');
 
 const router = express.Router();
 
-router.post('/message', processChatbotMessage);
+router.post('/chat', chatbotController);
 
-export default router;
+module.exports = router;

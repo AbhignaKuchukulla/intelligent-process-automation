@@ -1,17 +1,18 @@
 import axios, { AxiosError } from 'axios';
 
-// Base URL for API requests
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+// ✅ Set API base URL (Backend: Express API)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
-// Create axios instance with default config
+// ✅ Create Axios Instance for API Calls
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // ✅ Required for authentication & sessions
 });
 
-// Add request interceptor for authentication (if needed)
+// ✅ Add Authorization Token to Requests (if available)
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token');
@@ -23,7 +24,7 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Add response interceptor for error handling
+// ✅ Handle API Errors Gracefully
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
@@ -37,13 +38,50 @@ apiClient.interceptors.response.use(
   }
 );
 
-// ------------------- Chatbot API -------------------
-export async function sendChatMessage(message: string): Promise<{ message: string }> {
-  const response = await apiClient.post('/chat', { message });
+export default apiClient;
+
+//
+// ----------------- ✅ AUTHENTICATION APIs -----------------
+//
+
+// ✅ User Login
+export async function loginUser(email: string, password: string): Promise<{ token: string }> {
+  const response = await apiClient.post('/auth/login', { email, password });
   return response.data;
 }
 
-// ------------------- Documents API -------------------
+// ✅ User Registration
+export async function registerUser(name: string, email: string, password: string): Promise<{ message: string }> {
+  const response = await apiClient.post('/auth/register', { name, email, password });
+  return response.data;
+}
+
+// ✅ Fetch User Profile
+export async function fetchUserProfile(): Promise<{ id: string; name: string; email: string }> {
+  const response = await apiClient.get('/users/profile');
+  return response.data;
+}
+
+// ✅ Logout User
+export async function logoutUser(): Promise<{ message: string }> {
+  const response = await apiClient.post('/auth/logout');
+  return response.data;
+}
+
+//
+// ----------------- ✅ CHATBOT API -----------------
+//
+
+// ✅ Chatbot API: Send Message (Connects to Flask Chatbot on Port 5002)
+export async function sendChatMessage(message: string): Promise<{ message: string }> {
+  const response = await axios.post('http://localhost:5002/chat', { message });
+  return { message: response.data.response };
+}
+
+//
+// ----------------- ✅ DOCUMENT MANAGEMENT APIs -----------------
+//
+
 export interface Document {
   id: string;
   name: string;
@@ -53,47 +91,28 @@ export interface Document {
   confidence: number;
 }
 
-// Fetch documents (mocked)
+// ✅ Fetch Documents from Backend
 export async function fetchDocuments(): Promise<Document[]> {
-  return mockDocuments;
+  const response = await apiClient.get('/documents');
+  return response.data;
 }
 
-// Upload document (mocked)
+// ✅ Upload Document via Backend
 export async function uploadDocument(file: File): Promise<{ id: string; name: string }> {
   const formData = new FormData();
-  formData.append('document', file);
+  formData.append('file', file);
   
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        id: `doc_${Date.now()}`,
-        name: file.name,
-      });
-    }, 2000);
+  const response = await apiClient.post('/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
   });
+
+  return response.data;
 }
 
-// Mock data for documents
-const mockDocuments: Document[] = [
-  {
-    id: 'doc_1',
-    name: 'Invoice-XYZ-123.pdf',
-    type: 'Invoice',
-    date: '2025-02-15',
-    status: 'Processed',
-    confidence: 92,
-  },
-  {
-    id: 'doc_2',
-    name: 'Contract-ABC-456.pdf',
-    type: 'Contract',
-    date: '2025-02-10',
-    status: 'Processed',
-    confidence: 88,
-  },
-];
+//
+// ----------------- ✅ WORKFLOW MANAGEMENT APIs -----------------
+//
 
-// ------------------- Workflows API -------------------
 export interface Workflow {
   id: string;
   name: string;
@@ -103,29 +122,58 @@ export interface Workflow {
   nextRun: string;
 }
 
-// Fetch workflows (mocked)
+// ✅ Fetch Workflows from Backend
 export async function fetchWorkflows(): Promise<Workflow[]> {
-  return mockWorkflows;
+  const response = await apiClient.get('/workflows');
+  return response.data;
 }
 
-// Mock data for workflows
-const mockWorkflows: Workflow[] = [
-  {
-    id: 'workflow_1',
-    name: 'Invoice Processing',
-    type: 'OCR & Data Extraction',
-    status: 'Active',
-    lastRun: '2025-02-20',
-    nextRun: '2025-02-25',
-  },
-  {
-    id: 'workflow_2',
-    name: 'Contract Validation',
-    type: 'AI Compliance Check',
-    status: 'Completed',
-    lastRun: '2025-02-18',
-    nextRun: 'N/A',
-  },
-];
+// ✅ Start a Workflow
+export async function startWorkflow(workflowId: string): Promise<{ message: string }> {
+  const response = await apiClient.post(`/workflows/${workflowId}/start`);
+  return response.data;
+}
 
-export default apiClient;
+// ✅ Stop a Workflow
+export async function stopWorkflow(workflowId: string): Promise<{ message: string }> {
+  const response = await apiClient.post(`/workflows/${workflowId}/stop`);
+  return response.data;
+}
+
+//
+// ----------------- ✅ NLP PROCESSING APIs -----------------
+//
+
+// ✅ Process Text using NLP
+export async function processTextNLP(text: string): Promise<{ result: string }> {
+  const response = await apiClient.post('/nlp/process', { text });
+  return response.data;
+}
+
+// ✅ Extract Named Entities from Text
+export async function extractEntities(text: string): Promise<{ entities: string[] }> {
+  const response = await apiClient.post('/nlp/entities', { text });
+  return response.data;
+}
+
+//
+// ----------------- ✅ OCR PROCESSING APIs -----------------
+//
+
+// ✅ Upload Image for OCR Processing
+export async function uploadImageForOCR(file: File): Promise<{ extractedText: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await apiClient.post('/ocr/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+  return response.data;
+}
+
+// ✅ Get OCR Processing Results
+export async function getOCRResults(documentId: string): Promise<{ text: string }> {
+  const response = await apiClient.get(`/ocr/result/${documentId}`);
+  return response.data;
+}
