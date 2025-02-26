@@ -29,11 +29,11 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     const { response } = error;
-    const errorMessage = 
+    const errorMessage =
       response?.data && typeof response.data === 'object' && 'message' in response.data
         ? (response.data as { message: string }).message
         : 'An unexpected error occurred';
-    
+
     return Promise.reject(new Error(errorMessage));
   }
 );
@@ -74,7 +74,14 @@ export async function logoutUser(): Promise<{ message: string }> {
 
 // ✅ Chatbot API: Send Message (Connects to Flask Chatbot on Port 5002)
 export async function sendChatMessage(message: string): Promise<{ message: string }> {
-  const response = await axios.post('http://localhost:5002/chat', { message });
+  const response = await axios.post(
+    'http://localhost:5002/chat',
+    { message },
+    {
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true, // ✅ Ensures proper CORS handling with credentials
+    }
+  );
   return { message: response.data.response };
 }
 
@@ -101,7 +108,7 @@ export async function fetchDocuments(): Promise<Document[]> {
 export async function uploadDocument(file: File): Promise<{ id: string; name: string }> {
   const formData = new FormData();
   formData.append('file', file);
-  
+
   const response = await apiClient.post('/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });

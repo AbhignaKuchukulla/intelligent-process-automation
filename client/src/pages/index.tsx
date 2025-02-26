@@ -2,7 +2,6 @@ import { useState } from 'react';
 import Head from 'next/head';
 import { Box, Container, Typography, Button, Grid, Paper } from '@mui/material';
 import { useRouter } from 'next/router';
-import Navbar from '../components/Navbar';
 import DocumentUpload from '../components/DocumentUploader';
 import { uploadDocument } from '../services/apiClient';
 
@@ -14,7 +13,7 @@ export default function Home() {
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
     setUploadResult(null);
-    
+
     try {
       await uploadDocument(file);
       setUploadResult({
@@ -44,11 +43,8 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Navbar />
-
       <Box component="main" sx={{ py: 8, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
         <Container maxWidth="lg">
-          {/* Ensure parent Grid has container prop */}
           <Grid container spacing={4} alignItems="center" justifyContent="center">
             {/* Left Section - Text & Button */}
             <Grid item xs={12} sm={10} md={6}>

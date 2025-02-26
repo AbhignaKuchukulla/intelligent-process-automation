@@ -12,19 +12,16 @@ interface Message {
 }
 
 const ChatInterface: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      text: "Hello! I'm your assistant. How can I help you today? 😊",
-      sender: "bot",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([{
+    id: "1",
+    text: "Hello! I'm your assistant. How can I help you today? 😊",
+    sender: "bot",
+    timestamp: new Date(),
+  }]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -79,18 +76,18 @@ const ChatInterface: React.FC = () => {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-hide">
+      <div className="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-hide bg-gray-100 dark:bg-gray-800">
         {messages.map((message) => (
           <div
             key={message.id}
             className={`flex items-end ${
-              message.sender === "user" ? "justify-end" : "justify-start"
+              message.sender === "user" ? "justify-start" : "justify-end"
             }`}
           >
-            {/* AI Avatar */}
-            {message.sender === "bot" && (
-              <div className="h-10 w-10 rounded-full bg-green-600 text-white flex items-center justify-center mr-2">
-                🤖
+            {/* User Avatar */}
+            {message.sender === "user" && (
+              <div className="h-10 w-10 rounded-full bg-gray-300 text-gray-700 flex items-center justify-center mr-2">
+                😊
               </div>
             )}
 
@@ -99,25 +96,25 @@ const ChatInterface: React.FC = () => {
               <div
                 className={`p-3 rounded-lg shadow-md ${
                   message.sender === "user"
-                    ? "bg-blue-600 text-white text-right"
-                    : "bg-green-500 text-white"
+                    ? "bg-green-500 text-white text-left"
+                    : "bg-blue-600 text-white text-right"
                 }`}
               >
                 {message.text}
               </div>
               <div
                 className={`text-xs mt-1 ${
-                  message.sender === "user" ? "text-right text-gray-400" : "text-gray-200"
+                  message.sender === "user" ? "text-left text-gray-400" : "text-right text-gray-300"
                 }`}
               >
                 {format(message.timestamp)}
               </div>
             </div>
 
-            {/* User Avatar */}
-            {message.sender === "user" && (
-              <div className="h-10 w-10 rounded-full bg-gray-300 text-gray-700 flex items-center justify-center ml-2">
-                😊
+            {/* AI Avatar */}
+            {message.sender === "bot" && (
+              <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center ml-2">
+                🤖
               </div>
             )}
           </div>
@@ -125,8 +122,8 @@ const ChatInterface: React.FC = () => {
 
         {/* Typing Indicator */}
         {isLoading && (
-          <div className="flex items-center space-x-1">
-            <div className="h-10 w-10 rounded-full bg-green-600 text-white flex items-center justify-center">
+          <div className="flex items-center justify-end space-x-1">
+            <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center">
               🤖
             </div>
             <div className="flex space-x-2">
@@ -142,12 +139,14 @@ const ChatInterface: React.FC = () => {
             </div>
           </div>
         )}
-
         <div ref={messagesEndRef}></div>
       </div>
 
       {/* Chat Input */}
-      <form onSubmit={handleSendMessage} className="border-t p-4 bg-gray-100 dark:bg-gray-800 flex">
+      <form
+        onSubmit={handleSendMessage}
+        className="border-t p-4 bg-gray-100 dark:bg-gray-800 flex"
+      >
         <input
           type="text"
           value={input}

@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # ✅ Import CORS
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
@@ -12,7 +13,12 @@ if not API_KEY:
 
 genai.configure(api_key=API_KEY)
 
-app = Flask(__name__)
+app = Flask(__name__)  # ✅ Corrected "__name__"
+CORS(
+    app,
+    resources={r"/chat": {"origins": "http://localhost:3001"}},
+    supports_credentials=True  # ✅ Allow credentials
+)
 
 # ✅ Load the Gemini model
 model = genai.GenerativeModel("gemini-pro")
@@ -37,5 +43,5 @@ def chat():
     return jsonify({"response": bot_response})
 
 # ✅ Start Flask Server
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5002)
+if __name__ == '__main__':  # ✅ Corrected "__name__"
+    app.run(host='0.0.0.0', port=5002, debug=True)

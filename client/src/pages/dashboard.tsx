@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import ChatInterface from '../components/Chatbot/ChatInterface';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Grid, 
-  Paper, 
-  Tab, 
-  Tabs, 
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Paper,
+  Tab,
+  Tabs,
   CircularProgress,
   Card,
   CardContent,
@@ -22,7 +22,7 @@ import {
   Chip
 } from '@mui/material';
 import { DocumentScanner, AutoAwesome, Chat } from '@mui/icons-material';
-import Navbar from '../components/Navbar';
+
 import DocumentUpload from '../components/DocumentUploader';
 import { fetchDocuments, fetchWorkflows, uploadDocument } from '../services/apiClient';
 
@@ -32,9 +32,7 @@ interface TabPanelProps {
   value: number;
 }
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
+function TabPanel({ children, value, index, ...other }: TabPanelProps) {
   return (
     <div
       role="tabpanel"
@@ -43,11 +41,7 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`dashboard-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box sx={{ pt: 3 }}>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
     </div>
   );
 }
@@ -82,42 +76,34 @@ export default function Dashboard() {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // Load initial data
         const [docsData, workflowsData] = await Promise.all([
           fetchDocuments(),
           fetchWorkflows()
         ]);
-        
-        setDocuments(docsData);
-        setWorkflows(workflowsData);
+        setDocuments(docsData || []);
+        setWorkflows(workflowsData || []);
       } catch (error) {
         console.error('Failed to load dashboard data', error);
       } finally {
         setIsLoading(false);
       }
     };
-    
     loadData();
   }, []);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => setTabValue(newValue);
 
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
     setUploadResult(null);
-    
     try {
       await uploadDocument(file);
       setUploadResult({
         success: true,
         message: `Document "${file.name}" successfully processed!`
       });
-      
-      // Refresh documents list
       const updatedDocs = await fetchDocuments();
-      setDocuments(updatedDocs);
+      setDocuments(updatedDocs || []);
     } catch (error) {
       setUploadResult({
         success: false,
@@ -151,16 +137,13 @@ export default function Dashboard() {
         <meta name="description" content="Manage your automated processes and documents" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      
-      <Navbar />
-      
+
       <Box component="main" sx={{ py: 4 }}>
         <Container maxWidth="xl">
           <Typography variant="h4" component="h1" gutterBottom>
             Dashboard
           </Typography>
-          
-          {/* Summary Cards */}
+
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={4}>
               <Card>
@@ -185,29 +168,24 @@ export default function Dashboard() {
                 <CardContent>
                   <Typography variant="h6" gutterBottom>Success Rate</Typography>
                   <Typography variant="h3">
-                    {documents.length > 0 
-                      ? `${Math.round((documents.filter(d => d.status.toLowerCase() === 'processed').length / documents.length) * 100)}%` 
+                    {documents.length > 0
+                      ? `${Math.round((documents.filter(d => d.status.toLowerCase() === 'processed').length / documents.length) * 100)}%`
                       : 'N/A'}
                   </Typography>
                 </CardContent>
               </Card>
             </Grid>
           </Grid>
-          
-          {/* Main Content with Tabs */}
+
           <Paper sx={{ mb: 4 }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs 
-                value={tabValue} 
-                onChange={handleTabChange} 
-                aria-label="dashboard tabs"
-              >
+              <Tabs value={tabValue} onChange={handleTabChange} aria-label="dashboard tabs">
                 <Tab icon={<DocumentScanner />} label="Documents" />
                 <Tab icon={<AutoAwesome />} label="Workflows" />
                 <Tab icon={<Chat />} label="Chat Assistant" />
               </Tabs>
             </Box>
-            
+
             {isLoading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                 <CircularProgress />
@@ -216,13 +194,9 @@ export default function Dashboard() {
               <>
                 <TabPanel value={tabValue} index={0}>
                   <Box sx={{ mb: 3 }}>
-                    <DocumentUpload 
-                      onUpload={handleFileUpload} 
-                      isUploading={isUploading} 
-                      result={uploadResult}
-                    />
+                    <DocumentUpload onUpload={handleFileUpload} isUploading={isUploading} result={uploadResult} />
                   </Box>
-                  
+
                   <TableContainer>
                     <Table>
                       <TableHead>
@@ -249,11 +223,7 @@ export default function Dashboard() {
                               <TableCell>{doc.type}</TableCell>
                               <TableCell>{doc.date}</TableCell>
                               <TableCell>
-                                <Chip 
-                                  label={doc.status} 
-                                  color={getStatusColor(doc.status)} 
-                                  size="small" 
-                                />
+                                <Chip label={doc.status} color={getStatusColor(doc.status)} size="small" />
                               </TableCell>
                               <TableCell>{doc.confidence}%</TableCell>
                               <TableCell>
@@ -266,12 +236,11 @@ export default function Dashboard() {
                     </Table>
                   </TableContainer>
                 </TabPanel>
-                
+
                 <TabPanel value={tabValue} index={1}>
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                     <Button variant="contained">Create New Workflow</Button>
                   </Box>
-                  
                   <TableContainer>
                     <Table>
                       <TableHead>
@@ -297,11 +266,7 @@ export default function Dashboard() {
                               <TableCell>{workflow.name}</TableCell>
                               <TableCell>{workflow.type}</TableCell>
                               <TableCell>
-                                <Chip 
-                                  label={workflow.status} 
-                                  color={getStatusColor(workflow.status)} 
-                                  size="small" 
-                                />
+                                <Chip label={workflow.status} color={getStatusColor(workflow.status)} size="small" />
                               </TableCell>
                               <TableCell>{workflow.lastRun}</TableCell>
                               <TableCell>{workflow.nextRun}</TableCell>
@@ -315,21 +280,13 @@ export default function Dashboard() {
                     </Table>
                   </TableContainer>
                 </TabPanel>
-                
+
                 <TabPanel value={tabValue} index={2}>
                   <Paper sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
                     <Typography variant="h6" gutterBottom>
                       AI Assistant
                     </Typography>
-                    <Typography paragraph>
-                      The chat assistant interface will be implemented here to allow users to interact with 
-                      the system using natural language.
-                    </Typography>
-                    <TabPanel value={tabValue} index={2}>
-  <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
-    <ChatInterface />
-  </Box>
-</TabPanel>
+                    <ChatInterface />
                   </Paper>
                 </TabPanel>
               </>

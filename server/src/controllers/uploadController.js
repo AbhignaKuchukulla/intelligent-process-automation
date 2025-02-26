@@ -1,23 +1,29 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
-// Configure Multer storage
+// ✅ Ensure uploads folder exists
+const uploadDir = path.join(__dirname, '../../uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+// ✅ Configure Multer storage
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Uploads will be stored in 'uploads/' directory
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
-    }
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
 
 const upload = multer({ storage });
 
+// ✅ Upload Controller
 const uploadFile = (req, res) => {
     if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
-    res.json({ message: 'File uploaded successfully', filePath: req.file.path });
+    res.json({
+        success: true,
+        message: `${req.file.originalname} uploaded successfully`,
+        filePath: `/uploads/${req.file.filename}`,
+    });
 };
 
 module.exports = { upload, uploadFile };

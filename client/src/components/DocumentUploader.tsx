@@ -9,33 +9,51 @@ interface DocumentUploaderProps {
 
 const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUpload, isUploading, result }) => {
   const [file, setFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const selectedFile = event.target.files[0];
+  const formatFileSize = (size: number) => `${(size / 1024).toFixed(2)} KB`;
+
+  const validateFile = (selectedFile: File) => {
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    if (!allowedTypes.includes(selectedFile.type)) {
+      setError('❌ Unsupported file type. Allowed: PDF, JPG, PNG, DOC, DOCX.');
+      return false;
+    }
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setError('❌ File size exceeds 10MB limit.');
+      return false;
+    }
+    setError(null);
+    return true;
+  };
+
+  const handleFileSelect = (selectedFile: File) => {
+    if (validateFile(selectedFile)) {
       setFile(selectedFile);
       onUpload(selectedFile);
     }
   };
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files?.[0]) handleFileSelect(event.target.files[0]);
   };
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-      const droppedFile = event.dataTransfer.files[0];
-      setFile(droppedFile);
-      onUpload(droppedFile);
-    }
+    if (event.dataTransfer.files?.[0]) handleFileSelect(event.dataTransfer.files[0]);
   };
 
   return (
     <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
       <Typography variant="h6" gutterBottom>
-        Upload Your Document
+        📁 Upload Your Document
       </Typography>
 
       <Box
@@ -43,13 +61,12 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUpload, isUploadi
           border: '2px dashed #1976d2',
           padding: '20px',
           borderRadius: '10px',
-          textAlign: 'center',
-          cursor: 'pointer',
           backgroundColor: '#f4f6f8',
           '&:hover': { backgroundColor: '#e3f2fd' },
+          cursor: 'pointer',
         }}
         onClick={() => fileInputRef.current?.click()}
-        onDragOver={handleDragOver}
+        onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
       >
         <input
@@ -60,11 +77,14 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUpload, isUploadi
           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
           disabled={isUploading}
         />
-
         <Typography variant="body1" color="textSecondary">
-          {file ? file.name : 'Drag & Drop or Click to Upload'}
+          {file ? `${file.name} (${formatFileSize(file.size)})` : '📂 Drag & Drop or Click to Upload'}
         </Typography>
       </Box>
+
+      {error && (
+        <Typography sx={{ mt: 2, color: 'red', fontWeight: 'bold' }}>{error}</Typography>
+      )}
 
       {isUploading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
@@ -94,7 +114,7 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUpload, isUploadi
           onClick={() => onUpload(file)}
           disabled={isUploading}
         >
-          Process Document
+          🚀 Process Document
         </Button>
       )}
     </Paper>
