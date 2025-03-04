@@ -74,15 +74,21 @@ export async function logoutUser(): Promise<{ message: string }> {
 
 // ✅ Chatbot API: Send Message (Connects to Flask Chatbot on Port 5002)
 export async function sendChatMessage(message: string): Promise<{ message: string }> {
-  const response = await axios.post(
-    'http://localhost:5002/chat',
-    { message },
-    {
-      headers: { 'Content-Type': 'application/json' },
-      withCredentials: true, // ✅ Ensures proper CORS handling with credentials
-    }
-  );
-  return { message: response.data.response };
+  try {
+    const response = await axios.post(
+      'http://localhost:5002/chat',
+      { message },
+      {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: false, // 🚨 If using `*` in Flask CORS, set this to false
+      }
+    );
+
+    return { message: response.data.response };
+  } catch (error: any) {
+    console.error("🚨 Chat API Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.error || "Failed to send message");
+  }
 }
 
 //
@@ -100,10 +106,9 @@ export interface Document {
 
 // ✅ Fetch Documents from Backend
 export async function fetchDocuments(): Promise<Document[]> {
-  const response = await apiClient.get('/documents');
+  const response = await apiClient.get('/upload'); // ✅ Fetch from correct API endpoint
   return response.data;
 }
-
 // ✅ Upload Document via Backend
 export async function uploadDocument(file: File): Promise<{ id: string; name: string }> {
   const formData = new FormData();
@@ -113,37 +118,6 @@ export async function uploadDocument(file: File): Promise<{ id: string; name: st
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 
-  return response.data;
-}
-
-//
-// ----------------- ✅ WORKFLOW MANAGEMENT APIs -----------------
-//
-
-export interface Workflow {
-  id: string;
-  name: string;
-  type: string;
-  status: string;
-  lastRun: string;
-  nextRun: string;
-}
-
-// ✅ Fetch Workflows from Backend
-export async function fetchWorkflows(): Promise<Workflow[]> {
-  const response = await apiClient.get('/workflows');
-  return response.data;
-}
-
-// ✅ Start a Workflow
-export async function startWorkflow(workflowId: string): Promise<{ message: string }> {
-  const response = await apiClient.post(`/workflows/${workflowId}/start`);
-  return response.data;
-}
-
-// ✅ Stop a Workflow
-export async function stopWorkflow(workflowId: string): Promise<{ message: string }> {
-  const response = await apiClient.post(`/workflows/${workflowId}/stop`);
   return response.data;
 }
 
@@ -182,5 +156,21 @@ export async function uploadImageForOCR(file: File): Promise<{ extractedText: st
 // ✅ Get OCR Processing Results
 export async function getOCRResults(documentId: string): Promise<{ text: string }> {
   const response = await apiClient.get(`/ocr/result/${documentId}`);
+  return response.data;
+}
+
+export interface Workflow {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  lastRun: string;
+  nextRun: string;
+}
+
+
+// ✅ Fetch Workflows from Backend
+export async function fetchWorkflows(): Promise<Workflow[]> {
+  const response = await apiClient.get('/workflows');
   return response.data;
 }

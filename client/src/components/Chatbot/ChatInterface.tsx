@@ -12,12 +12,14 @@ interface Message {
 }
 
 const ChatInterface: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([{
-    id: "1",
-    text: "Hello! I'm your assistant. How can I help you today? 😊",
-    sender: "bot",
-    timestamp: new Date(),
-  }]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      text: "Hello! I'm your assistant. How can I help you today? 😊",
+      sender: "bot",
+      timestamp: new Date(),
+    },
+  ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -52,10 +54,15 @@ const ChatInterface: React.FC = () => {
       };
 
       setMessages((prev) => [...prev, botMessage]);
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Chatbot Error:", error);
+
+      const errorText =
+        error.response?.data?.error || error.message || JSON.stringify(error);
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Sorry, I'm having trouble processing your request. Please try again later.",
+        text: `❌ Error: ${errorText}`,
         sender: "bot",
         timestamp: new Date(),
         isError: true,
@@ -95,7 +102,9 @@ const ChatInterface: React.FC = () => {
             <div className="max-w-xs md:max-w-sm lg:max-w-md">
               <div
                 className={`p-3 rounded-lg shadow-md ${
-                  message.sender === "user"
+                  message.isError
+                    ? "bg-red-500 text-white"
+                    : message.sender === "user"
                     ? "bg-green-500 text-white text-left"
                     : "bg-blue-600 text-white text-right"
                 }`}
@@ -104,7 +113,9 @@ const ChatInterface: React.FC = () => {
               </div>
               <div
                 className={`text-xs mt-1 ${
-                  message.sender === "user" ? "text-left text-gray-400" : "text-right text-gray-300"
+                  message.sender === "user"
+                    ? "text-left text-gray-400"
+                    : "text-right text-gray-300"
                 }`}
               >
                 {format(message.timestamp)}

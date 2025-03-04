@@ -73,6 +73,8 @@ export default function Dashboard() {
   const [uploadResult, setUploadResult] = useState<null | { success: boolean; message: string }>(null);
 
   useEffect(() => {
+    let isMounted = true; // ✅ Prevent state update if unmounted
+  
     const loadData = async () => {
       setIsLoading(true);
       try {
@@ -80,17 +82,25 @@ export default function Dashboard() {
           fetchDocuments(),
           fetchWorkflows()
         ]);
-        setDocuments(docsData || []);
-        setWorkflows(workflowsData || []);
+  
+        if (isMounted) {
+          setDocuments(docsData || []);
+          setWorkflows(workflowsData || []);
+        }
       } catch (error) {
-        console.error('Failed to load dashboard data', error);
+        console.error('❌ Failed to load dashboard data:', error);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
+  
     loadData();
+  
+    return () => {
+      isMounted = false; // ✅ Cleanup function
+    };
   }, []);
-
+  
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => setTabValue(newValue);
 
   const handleFileUpload = async (file: File) => {
@@ -102,6 +112,7 @@ export default function Dashboard() {
         success: true,
         message: `Document "${file.name}" successfully processed!`
       });
+      
       const updatedDocs = await fetchDocuments();
       setDocuments(updatedDocs || []);
     } catch (error) {
@@ -169,8 +180,8 @@ export default function Dashboard() {
                   <Typography variant="h6" gutterBottom>Success Rate</Typography>
                   <Typography variant="h3">
                     {documents.length > 0
-                      ? `${Math.round((documents.filter(d => d.status.toLowerCase() === 'processed').length / documents.length) * 100)}%`
-                      : 'N/A'}
+                        ? `${Math.round((documents.filter(d => d.status.toLowerCase() === 'processed').length / documents.length) * 100)}%`
+                        : 'N/A'}                      
                   </Typography>
                 </CardContent>
               </Card>
