@@ -21,7 +21,10 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('Request Interceptor Error:', error);
+    return Promise.reject(error);
+  }
 );
 
 // ✅ Handle API Errors Gracefully
@@ -29,11 +32,18 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     const { response } = error;
-    const errorMessage =
-      response?.data && typeof response.data === 'object' && 'message' in response.data
-        ? (response.data as { message: string }).message
-        : 'An unexpected error occurred';
+    let errorMessage = 'An unexpected error occurred';
 
+    if (response) {
+      // Extract error message from response
+      if (response.data && typeof response.data === 'object' && 'message' in response.data) {
+        errorMessage = (response.data as { message: string }).message;
+      } else if (response.statusText) {
+        errorMessage = response.statusText;
+      }
+    }
+
+    console.error('API Error:', errorMessage);
     return Promise.reject(new Error(errorMessage));
   }
 );
@@ -46,26 +56,46 @@ export default apiClient;
 
 // ✅ User Login
 export async function loginUser(email: string, password: string): Promise<{ token: string }> {
-  const response = await apiClient.post('/auth/login', { email, password });
-  return response.data;
+  try {
+    const response = await apiClient.post('/auth/login', { email, password });
+    return response.data;
+  } catch (error) {
+    console.error('Login Error:', error);
+    throw new Error('Failed to log in');
+  }
 }
 
 // ✅ User Registration
 export async function registerUser(name: string, email: string, password: string): Promise<{ message: string }> {
-  const response = await apiClient.post('/auth/register', { name, email, password });
-  return response.data;
+  try {
+    const response = await apiClient.post('/auth/register', { name, email, password });
+    return response.data;
+  } catch (error) {
+    console.error('Registration Error:', error);
+    throw new Error('Failed to register');
+  }
 }
 
 // ✅ Fetch User Profile
 export async function fetchUserProfile(): Promise<{ id: string; name: string; email: string }> {
-  const response = await apiClient.get('/users/profile');
-  return response.data;
+  try {
+    const response = await apiClient.get('/users/profile');
+    return response.data;
+  } catch (error) {
+    console.error('Profile Fetch Error:', error);
+    throw new Error('Failed to fetch profile');
+  }
 }
 
 // ✅ Logout User
 export async function logoutUser(): Promise<{ message: string }> {
-  const response = await apiClient.post('/auth/logout');
-  return response.data;
+  try {
+    const response = await apiClient.post('/auth/logout');
+    return response.data;
+  } catch (error) {
+    console.error('Logout Error:', error);
+    throw new Error('Failed to log out');
+  }
 }
 
 //
@@ -106,19 +136,41 @@ export interface Document {
 
 // ✅ Fetch Documents from Backend
 export async function fetchDocuments(): Promise<Document[]> {
-  const response = await apiClient.get('/upload'); // ✅ Fetch from correct API endpoint
-  return response.data;
+  try {
+    const response = await apiClient.get('/documents');
+    return response.data;
+  } catch (error) {
+    console.error('Fetch Documents Error:', error);
+    throw new Error('Failed to fetch documents');
+  }
 }
+
 // ✅ Upload Document via Backend
 export async function uploadDocument(file: File): Promise<{ id: string; name: string }> {
-  const formData = new FormData();
-  formData.append('file', file);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
 
-  const response = await apiClient.post('/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+    const response = await apiClient.post('/documents/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    console.error('Upload Document Error:', error);
+    throw new Error('Failed to upload document');
+  }
+}
+
+// ✅ Fetch Document by ID
+export async function fetchDocumentById(documentId: string): Promise<Document> {
+  try {
+    const response = await apiClient.get(`/documents/${documentId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Fetch Document by ID Error:', error);
+    throw new Error('Failed to fetch document');
+  }
 }
 
 //
@@ -127,14 +179,24 @@ export async function uploadDocument(file: File): Promise<{ id: string; name: st
 
 // ✅ Process Text using NLP
 export async function processTextNLP(text: string): Promise<{ result: string }> {
-  const response = await apiClient.post('/nlp/process', { text });
-  return response.data;
+  try {
+    const response = await apiClient.post('/nlp/process', { text });
+    return response.data;
+  } catch (error) {
+    console.error('NLP Processing Error:', error);
+    throw new Error('Failed to process text');
+  }
 }
 
 // ✅ Extract Named Entities from Text
 export async function extractEntities(text: string): Promise<{ entities: string[] }> {
-  const response = await apiClient.post('/nlp/entities', { text });
-  return response.data;
+  try {
+    const response = await apiClient.post('/nlp/entities', { text });
+    return response.data;
+  } catch (error) {
+    console.error('Entity Extraction Error:', error);
+    throw new Error('Failed to extract entities');
+  }
 }
 
 //
@@ -143,21 +205,35 @@ export async function extractEntities(text: string): Promise<{ entities: string[
 
 // ✅ Upload Image for OCR Processing
 export async function uploadImageForOCR(file: File): Promise<{ extractedText: string }> {
-  const formData = new FormData();
-  formData.append('file', file);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
 
-  const response = await apiClient.post('/ocr/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+    const response = await apiClient.post('/ocr/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    console.error('OCR Upload Error:', error);
+    throw new Error('Failed to upload image for OCR');
+  }
 }
 
 // ✅ Get OCR Processing Results
 export async function getOCRResults(documentId: string): Promise<{ text: string }> {
-  const response = await apiClient.get(`/ocr/result/${documentId}`);
-  return response.data;
+  try {
+    const response = await apiClient.get(`/ocr/result/${documentId}`);
+    return response.data;
+  } catch (error) {
+    console.error('OCR Results Error:', error);
+    throw new Error('Failed to fetch OCR results');
+  }
 }
+
+//
+// ----------------- ✅ WORKFLOW MANAGEMENT APIs -----------------
+//
 
 export interface Workflow {
   id: string;
@@ -168,9 +244,13 @@ export interface Workflow {
   nextRun: string;
 }
 
-
 // ✅ Fetch Workflows from Backend
 export async function fetchWorkflows(): Promise<Workflow[]> {
-  const response = await apiClient.get('/workflows');
-  return response.data;
+  try {
+    const response = await apiClient.get('/workflows');
+    return response.data;
+  } catch (error) {
+    console.error('Fetch Workflows Error:', error);
+    throw new Error('Failed to fetch workflows');
+  }
 }

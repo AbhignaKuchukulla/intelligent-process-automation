@@ -1,23 +1,23 @@
-import React from "react";
-import Link from "next/link";
+import React from 'react';
 import {
-  Box,
-  Card,
-  CardContent,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
   Paper,
-} from "@mui/material";
+  Chip,
+  Button,
+  Box,
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add'; // Icon for the button
 
 interface Workflow {
   id: string;
   name: string;
   type: string;
+  status: string;
   lastRun: string;
   nextRun: string;
 }
@@ -27,49 +27,80 @@ interface ActiveWorkflowsProps {
 }
 
 const ActiveWorkflows: React.FC<ActiveWorkflowsProps> = ({ workflows }) => {
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      case 'failed':
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
+
+  const handleCreateWorkflow = () => {
+    // Add logic to navigate to a workflow creation page or open a modal
+    console.log('Create Workflow clicked');
+    // Example: router.push('/workflows/create');
+  };
+
   return (
-    <Card>
-      <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Active Workflows</Typography>
-          <Link href="/workflows" passHref>
-            <Typography color="primary" sx={{ cursor: "pointer" }}>
-              View All →
-            </Typography>
-          </Link>
-        </Box>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
+    <Box>
+      {/* Create Workflow Button */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleCreateWorkflow}
+        >
+          Create Workflow
+        </Button>
+      </Box>
+
+      {/* Workflows Table */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Type</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Last Run</TableCell>
+              <TableCell>Next Run</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {workflows.length === 0 ? (
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Last Run</TableCell>
-                <TableCell>Next Run</TableCell>
+                <TableCell colSpan={6} align="center">
+                  No active workflows found.
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {workflows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} align="center">
-                    No active workflows
+            ) : (
+              workflows.map((workflow) => (
+                <TableRow key={workflow.id}>
+                  <TableCell>{workflow.name}</TableCell>
+                  <TableCell>{workflow.type}</TableCell>
+                  <TableCell>
+                    <Chip label={workflow.status} color={getStatusColor(workflow.status)} size="small" />
+                  </TableCell>
+                  <TableCell>{workflow.lastRun}</TableCell>
+                  <TableCell>{workflow.nextRun}</TableCell>
+                  <TableCell>
+                    <Button size="small" variant="outlined">
+                      Edit
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ) : (
-                workflows.map((workflow) => (
-                  <TableRow key={workflow.id} hover>
-                    <TableCell>{workflow.name}</TableCell>
-                    <TableCell>{workflow.type}</TableCell>
-                    <TableCell>{workflow.lastRun}</TableCell>
-                    <TableCell>{workflow.nextRun}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </CardContent>
-    </Card>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
 

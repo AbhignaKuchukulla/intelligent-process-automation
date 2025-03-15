@@ -37,7 +37,6 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUpload, isUploadi
   const handleFileSelect = (selectedFile: File) => {
     if (validateFile(selectedFile)) {
       setFile(selectedFile);
-      onUpload(selectedFile);
     }
   };
 
@@ -48,6 +47,18 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUpload, isUploadi
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     if (event.dataTransfer.files?.[0]) handleFileSelect(event.dataTransfer.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (file) {
+      try {
+        await onUpload(file);
+        setFile(null); // Reset file after successful upload
+        if (fileInputRef.current) fileInputRef.current.value = ''; // Clear file input
+      } catch (error) {
+        console.error('Upload failed:', error);
+      }
+    }
   };
 
   return (
@@ -111,7 +122,7 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUpload, isUploadi
           variant="contained"
           color="primary"
           sx={{ mt: 2 }}
-          onClick={() => onUpload(file)}
+          onClick={handleUpload}
           disabled={isUploading}
         >
           🚀 Process Document
