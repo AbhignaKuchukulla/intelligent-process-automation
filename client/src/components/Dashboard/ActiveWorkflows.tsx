@@ -10,8 +10,9 @@ import {
   Chip,
   Button,
   Box,
+  CircularProgress,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add'; // Icon for the button
+import AddIcon from '@mui/icons-material/Add';
 
 interface Workflow {
   id: string;
@@ -24,9 +25,10 @@ interface Workflow {
 
 interface ActiveWorkflowsProps {
   workflows: Workflow[];
+  loading?: boolean; // Optional loading prop
 }
 
-const ActiveWorkflows: React.FC<ActiveWorkflowsProps> = ({ workflows }) => {
+const ActiveWorkflows: React.FC<ActiveWorkflowsProps> = ({ workflows, loading }) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'active':
@@ -41,20 +43,22 @@ const ActiveWorkflows: React.FC<ActiveWorkflowsProps> = ({ workflows }) => {
   };
 
   const handleCreateWorkflow = () => {
-    // Add logic to navigate to a workflow creation page or open a modal
     console.log('Create Workflow clicked');
-    // Example: router.push('/workflows/create');
   };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>
       {/* Create Workflow Button */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreateWorkflow}
-        >
+        <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreateWorkflow}>
           Create Workflow
         </Button>
       </Box>

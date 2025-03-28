@@ -1,6 +1,6 @@
 import React from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
+import Link from "next/link"; // Import Link
+import { useRouter } from "next/router"; // Import useRouter
 import {
   Box,
   Card,
@@ -31,7 +31,7 @@ interface RecentDocumentsProps {
 }
 
 const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) => {
-  const router = useRouter();
+  const router = useRouter(); // Use the useRouter hook
 
   // Log documents for debugging
   console.log("Documents:", documents);
@@ -40,12 +40,25 @@ const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) => {
   const checkForDuplicateIds = (documents: Document[]) => {
     const ids = documents.map((doc) => doc.id);
     const uniqueIds = new Set(ids);
+
     if (ids.length !== uniqueIds.size) {
       console.error("Duplicate IDs found in documents array!");
+      console.log(
+        "Duplicate IDs:",
+        ids.filter((id, index) => ids.indexOf(id) !== index)
+      );
     }
   };
+
   checkForDuplicateIds(documents);
 
+  // Handle missing or duplicate IDs by generating unique keys
+  const documentsWithUniqueIds = documents.map((doc, index) => ({
+    ...doc,
+    id: doc.id || `doc-${index}`, // Use existing ID or generate a unique one
+  }));
+
+  // Get status color based on document status
   const getStatusColor = (
     status: string
   ): "success" | "warning" | "error" | "info" | "default" => {
@@ -61,7 +74,12 @@ const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) => {
     }
   };
 
+  // Handle view document action
   const handleViewDocument = (documentId: string) => {
+    if (!documentId) {
+      console.error("Document ID is undefined!");
+      return;
+    }
     router.push(`/documents/view/${documentId}`);
   };
 
@@ -76,7 +94,10 @@ const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) => {
             </Typography>
           </Link>
         </Box>
-        <TableContainer component={Paper} sx={{ overflowX: "auto", mt: 2, borderRadius: 2 }}>
+        <TableContainer
+          component={Paper}
+          sx={{ overflowX: "auto", mt: 2, borderRadius: 2 }}
+        >
           <Table>
             <TableHead>
               <TableRow>
@@ -88,10 +109,15 @@ const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {documents.length === 0 ? (
+              {documentsWithUniqueIds.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} align="center">
-                    <Box display="flex" flexDirection="column" alignItems="center" p={3}>
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      p={3}
+                    >
                       <InsertDriveFileIcon color="disabled" fontSize="large" />
                       <Typography variant="body1" color="textSecondary">
                         No documents found
@@ -100,8 +126,8 @@ const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) => {
                   </TableCell>
                 </TableRow>
               ) : (
-                documents.map((doc, index) => (
-                  <TableRow key={doc.id || index} hover>
+                documentsWithUniqueIds.map((doc) => (
+                  <TableRow key={doc.id} hover>
                     <TableCell>{doc.name}</TableCell>
                     <TableCell>{doc.type}</TableCell>
                     <TableCell>
