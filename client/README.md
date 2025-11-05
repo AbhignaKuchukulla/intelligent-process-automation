@@ -14,7 +14,25 @@ pnpm dev
 bun dev
 ```
 
+Alternatively, this project provides explicit scripts to control Turbopack vs webpack:
+
+```powershell
+# Start development server (webpack, recommended for compatibility)
+npm run dev
+
+# Start development server using Turbopack (experimental/newer, may be faster)
+npm run dev:turbopack
+
+# Explicit webpack script (alias)
+npm run dev:webpack
+```
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+Notes:
+
+- The project was developed and tested on Node 18/20. Node 22 may be newer than some tools expect; if you see runtime or build errors consider switching to Node 18/20 using nvm, nvm-windows, or Volta.
+- If the dev server appears to start but you don't see logs in the terminal, try opening the URL above and check the browser console for errors.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

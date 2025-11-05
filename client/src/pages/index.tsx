@@ -62,7 +62,7 @@ export default function Home() {
         <title>Intelligent Process Automation</title>
         <meta name="description" content="AI-powered document processing and automation" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/logo.svg" />
       </Head>
 
       <Box component="main" sx={{ py: 8, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>

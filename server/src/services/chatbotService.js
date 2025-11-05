@@ -2,8 +2,9 @@ const axios = require('axios');
 
 const getChatbotResponse = async (message) => {
     try {
-        console.log(`🔹 Sending message to chatbot: ${message}`);
-        const response = await axios.post('http://127.0.0.1:5002/chat', { message });
+        const CHATBOT_URL = process.env.CHATBOT_URL || 'http://127.0.0.1:5002';
+        console.log(`🔹 Sending message to chatbot (${CHATBOT_URL}): ${message}`);
+        const response = await axios.post(`${CHATBOT_URL.replace(/\/$/, '')}/chat`, { message });
         console.log(`✅ Chatbot response received: ${response.data.response}`);
         return response.data.response;
     } catch (error) {

@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Box, Button, Typography, CircularProgress, Paper } from '@mui/material';
+import { useToast } from './Toast/ToastProvider';
 
 interface DocumentUploaderProps {
   onUpload: (file: File) => Promise<void>;
@@ -10,6 +11,7 @@ interface DocumentUploaderProps {
 const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUpload, isUploading, result }) => {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatFileSize = (size: number) => `${(size / 1024).toFixed(2)} KB`;
@@ -55,11 +57,20 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUpload, isUploadi
         await onUpload(file);
         setFile(null); // Reset file after successful upload
         if (fileInputRef.current) fileInputRef.current.value = ''; // Clear file input
+        showToast({ message: '✅ Document uploaded and processing started.', severity: 'success' });
       } catch (error) {
         console.error('Upload failed:', error);
+        showToast({ message: '❌ Upload failed. Please try again.', severity: 'error' });
       }
     }
   };
+
+  // Show result notifications when result prop changes
+  useEffect(() => {
+    if (result) {
+      showToast({ message: result.message, severity: result.success ? 'success' : 'error' });
+    }
+  }, [result, showToast]);
 
   return (
     <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>

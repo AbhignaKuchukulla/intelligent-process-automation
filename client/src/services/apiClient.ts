@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import { notify } from '../utils/notifier';
 
 // ✅ Set API base URL (Backend: Express API)
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
@@ -44,6 +45,11 @@ apiClient.interceptors.response.use(
     }
 
     console.error('API Error:', errorMessage);
+    try {
+      notify({ message: errorMessage, severity: 'error' });
+    } catch (e) {
+      // ignore notifier failures
+    }
     return Promise.reject(new Error(errorMessage));
   }
 );
@@ -105,19 +111,22 @@ export async function logoutUser(): Promise<{ message: string }> {
 // ✅ Chatbot API: Send Message (Connects to Flask Chatbot on Port 5002)
 export async function sendChatMessage(message: string): Promise<{ message: string }> {
   try {
-    const response = await axios.post(
-      'http://localhost:5002/chat',
-      { message },
-      {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: false, // 🚨 If using `*` in Flask CORS, set this to false
-      }
-    );
+    const CHATBOT_URL = process.env.NEXT_PUBLIC_CHATBOT_URL || 'http://localhost:5002';
+    const response = await axios.post(`${CHATBOT_URL.replace(/\/$/, '')}/chat`, { message }, {
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: false, // If Flask CORS is permissive, keep this false for cross-origin
+    });
 
     return { message: response.data.response };
   } catch (error: any) {
+    const chatErrMsg = error.response?.data?.error || error.message || 'Failed to send message';
     console.error("🚨 Chat API Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.error || "Failed to send message");
+    try {
+      notify({ message: chatErrMsg, severity: 'error' });
+    } catch (e) {
+      // ignore
+    }
+    throw new Error(chatErrMsg);
   }
 }
 
@@ -154,6 +163,12 @@ export async function uploadDocument(file: File): Promise<{ id: string; name: st
     const response = await apiClient.post('/documents/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+
+    try {
+      notify({ message: 'Document uploaded successfully.', severity: 'success' });
+    } catch (e) {
+      // ignore notifier errors
+    }
 
     return response.data;
   } catch (error) {

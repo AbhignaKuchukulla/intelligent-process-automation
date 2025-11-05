@@ -7,8 +7,9 @@ const chatbotController = async (req, res) => {
             return res.status(400).json({ message: 'Message is required' });
         }
 
-        // ✅ Make sure this points to Flask API (5002)
-        const flaskResponse = await axios.post('http://localhost:5002/chat', { message });
+    // ✅ Use CHATBOT_URL env var (falls back to localhost:5002)
+    const CHATBOT_URL = process.env.CHATBOT_URL || 'http://localhost:5002';
+    const flaskResponse = await axios.post(`${CHATBOT_URL.replace(/\/$/, '')}/chat`, { message });
 
         res.json({ response: flaskResponse.data.response });
     } catch (error) {

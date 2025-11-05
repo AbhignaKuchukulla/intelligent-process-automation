@@ -1,127 +1,74 @@
-# Intelligent Process Automation (IPA) System
+# Intelligent Process Automation (IPA)
 
-## Overview
-The **Intelligent Process Automation (IPA) System** is an AI-powered automation solution designed to streamline document processing, data entry, and customer interactions for enterprises. It integrates **OCR, NLP, and AI-based document classification** to extract structured data from PDFs, images, and DOCX files, reducing manual effort and improving efficiency.
+This repository contains a small full-stack project for document processing and automation. It includes:
 
-## Features
-- **OCR Module**: Extracts text and tables from scanned documents using **Tesseract OCR, pdfplumber, and OpenCV**.
-- **NLP Module**: Performs **Named Entity Recognition (NER)** to extract key information (e.g., names, dates, IDs) using **spaCy and Hugging Face Transformers**.
-- **Document Classification**: Categorizes documents into different types using a **CNN model trained on the RVL-CDIP dataset**.
-- **AI-Powered Chatbot**: Uses **Google Gemini AI** to handle customer queries related to document processing.
+- A Next.js frontend in `client/` (TypeScript + React)
+- An Express + Node.js backend in `server/` (routes in `server/src`)
+- Two Flask microservices in the `server/` root: `chatbot_api.py` (port 5002) and `ocr_api.py` (port 5001)
+- MongoDB for persistence (used by the server)
 
-## Tech Stack
-- **Backend**: FastAPI (Python) for API handling
-- **Frontend**: React.js (optional UI for testing API calls)
-- **AI Models**:
-  - OCR: **Tesseract OCR, pdfplumber, PyMuPDF**
-  - NLP: **spaCy, Hugging Face Transformers**
-  - Document Classification: **Scikit-learn, TensorFlow**
-- **Database**: MongoDB (for structured data storage)
-- **Infrastructure**: AWS/GCP/Azure (for cloud deployment)
+This README focusses on how to run the project locally and where to find key pieces.
 
----
+## Quickstart (Windows / PowerShell)
 
-## Installation
-### **Prerequisites**
-Ensure you have the following installed:
-- Python 3.8+
-- Node.js (if using the frontend)
-- MongoDB
-- Git
+1. Copy the example env and fill values:
 
-### **Clone the Repository**
-```sh
-git clone https://github.com/AbhignaKuchukulla/intelligent-process-automation.git
-cd intelligent-process-automation
+```powershell
+cp .env.example .env
+# and optionally create client/.env.local using values from .env.example
 ```
 
-### **Backend Setup**
-1. Navigate to the `server/` directory:
-    ```sh
-    cd server
-    ```
-2. Create and activate a virtual environment:
-    ```sh
-    python -m venv venv
-    source venv/bin/activate  # On Windows use: venv\Scripts\activate
-    ```
-3. Install dependencies:
-    ```sh
-    pip install -r requirements.txt
-    ```
-4. Start the FastAPI server:
-    ```sh
-    uvicorn main:app --reload
-    ```
+2. Start MongoDB (if you have it installed locally). For a quick local server you can run MongoDB Community or use Docker.
 
-### **Frontend Setup (Optional)**
-1. Navigate to the `client/` directory:
-    ```sh
-    cd client
-    ```
-2. Install dependencies:
-    ```sh
-    npm install
-    ```
-3. Start the development server:
-    ```sh
-    npm start
-    ```
+3. Start the Express server:
 
----
-
-## API Endpoints
-### **1. OCR Processing**
-- **Endpoint:** `POST /api/ocr`
-- **Description:** Extracts text from images and PDFs
-- **Request Example:**
-    ```json
-    {
-      "file": "invoice.pdf"
-    }
-    ```
-
-### **2. NLP Processing**
-- **Endpoint:** `POST /api/nlp`
-- **Description:** Extracts key information from text
-- **Request Example:**
-    ```json
-    {
-      "text": "Invoice issued to John Doe on 2025-02-25."
-    }
-    ```
-
-### **3. Document Classification**
-- **Endpoint:** `POST /api/classify`
-- **Description:** Classifies document type
-- **Request Example:**
-    ```json
-    {
-      "file": "document.pdf"
-    }
-    ```
-
-### **4. AI Chatbot**
-- **Endpoint:** `POST /api/chatbot`
-- **Description:** AI-powered chatbot for customer support
-- **Request Example:**
-    ```json
-    {
-      "query": "What is the status of my document processing?"
-    }
-    ```
-
----
-
-## Testing
-To run tests:
-```sh
-pytest tests/
+```powershell
+cd server
+npm install
+npm run dev
+# server defaults to port 5005
 ```
----
 
-## Contributors
-- **Kuchukulla Abhigna**
+4. Start the Flask microservices (in separate terminals):
 
-For queries, contact **abhignakuchukulla@gmail.com**
+```powershell
+cd server
+# Chatbot (requires GEMINI_API_KEY in .env)
+python chatbot_api.py
+
+# OCR
+python ocr_api.py
+```
+
+5. Start the Next.js frontend:
+
+```powershell
+cd client
+npm install
+npm run dev
+# frontend defaults to port 3000
+```
+
+Notes:
+- The frontend uses `NEXT_PUBLIC_API_URL` to reach the Express backend (default: http://localhost:5005/api).
+- The server and client can use `CHATBOT_URL` / `NEXT_PUBLIC_CHATBOT_URL` and `OCR_URL` / `NEXT_PUBLIC_OCR_URL` to point to the Flask microservices.
+
+## Important files / structure
+
+- `server/server.js` — Express server entrypoint; mounts routes from `server/src/routes` and serves `/api-docs`.
+- `server/src/controllers` — controllers for auth, upload, chatbot, OCR, etc.
+- `client/src/services/apiClient.ts` — frontend API client used across pages/components.
+- `server/chatbot_api.py`, `server/ocr_api.py` — local Flask microservices used by the project.
+
+## Health checks and debugging
+
+- The Express server now performs a quick runtime check on startup to see if `CHATBOT_URL` and `OCR_URL` are reachable and logs warnings if not. This helps detect missing microservices early.
+
+## Next improvements (recommended)
+
+1. Add a `docker-compose.yml` to run MongoDB, the Express server, Next client, and Flask microservices together.
+2. Add a `.env.example` (already present) and ensure each service documents required secrets (e.g., `GEMINI_API_KEY` for the chatbot).
+3. Add CI that runs lint/build on push.
+
+If you'd like, I can add a Docker Compose stack next (I can draft one using build contexts and small Dockerfiles for each service)."*** End Patch
 

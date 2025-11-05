@@ -2,6 +2,7 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import Navbar from '../components/Navbar';
 import '../styles/globals.css';
+import { ToastProvider } from '../components/Toast/ToastProvider';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 
 // Create a Material UI theme
@@ -22,18 +23,20 @@ const theme = createTheme({
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider theme={theme}>
+      <ToastProvider>
       <Head>
         <title>Intelligent Process Automation</title>
         <meta name="description" content="AI-driven business process automation system" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="/logo.svg" />
       </Head>
 
-      <CssBaseline />
-      <Navbar />
-      <main>
-        <Component {...pageProps} />
-      </main>
+        <CssBaseline />
+        <Navbar />
+        <main>
+          <Component {...pageProps} />
+        </main>
+      </ToastProvider>
     </ThemeProvider>
   );
 }

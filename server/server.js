@@ -13,7 +13,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const { body, validationResult } = require('express-validator');
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./swagger.json');
+const axios = require('axios');
 
 // Routes
 const documentRoutes = require('./src/routes/documentRoutes');
@@ -77,8 +77,7 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
-// API Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// API Documentation (generated via swagger-jsdoc further below)
 
 // Error Handler
 app.use((err, req, res, next) => {
@@ -115,6 +114,27 @@ const server = app.listen(PORT, () => {
   logger.info(`🚀 Server running on port ${PORT}`);
 });
 
+// Quick runtime checks for external microservices (chatbot / OCR)
+const checkExternalServices = async () => {
+  const services = [
+    { name: 'CHATBOT', url: process.env.CHATBOT_URL },
+    { name: 'OCR', url: process.env.OCR_URL },
+  ];
+
+  for (const svc of services) {
+    if (!svc.url) continue;
+    try {
+      // Try a simple GET to the base URL to confirm the host is reachable.
+      await axios.get(svc.url, { timeout: 2000 });
+      logger.info(`✅ ${svc.name} service reachable at ${svc.url}`);
+    } catch (err) {
+      logger.warn(`⚠️ ${svc.name} service not reachable at ${svc.url} — ${err.message}`);
+    }
+  }
+};
+
+// Run the checks shortly after server starts
+setTimeout(checkExternalServices, 1000);
 process.on('SIGINT', () => {
   logger.info('Shutting down server...');
   server.close(() => {

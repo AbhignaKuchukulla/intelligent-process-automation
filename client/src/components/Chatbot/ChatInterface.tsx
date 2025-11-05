@@ -18,6 +18,7 @@ import {
 import SendIcon from '@mui/icons-material/Send';
 import { sendChatMessage } from '../../services/apiClient';
 import ReactMarkdown from 'react-markdown'; // Import react-markdown for markdown rendering
+import { useToast } from '../Toast/ToastProvider';
 
 interface Message {
   id: string;
@@ -39,6 +40,7 @@ const ChatInterface: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const { showToast } = useToast();
 
   // Scroll to the bottom of the chat when messages are updated
   useEffect(() => {
@@ -91,6 +93,7 @@ const ChatInterface: React.FC = () => {
       };
 
       setMessages((prev) => [...prev, errorMessage]);
+      showToast({ message: `Chatbot error: ${errorText}`, severity: 'error' });
     } finally {
       setIsLoading(false);
     }
