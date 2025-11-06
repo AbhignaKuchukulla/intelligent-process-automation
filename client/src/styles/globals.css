@@ -1,8 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Basic global styles to improve visuals */
+/* Global styles */
 :root {
 	--bg-gradient: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
 	--app-max-width: 1100px;

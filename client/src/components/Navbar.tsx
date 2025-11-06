@@ -1,6 +1,9 @@
+"use client";
+
 import React, { useState } from "react";
-import { useRouter } from "next/router";
-import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import NextLink from "next/link";
+import MuiLink from "@mui/material/Link";
 import {
   AppBar,
   Toolbar,
@@ -17,6 +20,7 @@ import {
   MenuItem,
   Avatar,
   Badge,
+  Container,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import HomeIcon from "@mui/icons-material/Home";
@@ -37,10 +41,11 @@ const menuItems = [
 
 const Navbar: React.FC = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // For user menu dropdown
 
-  const isActive = (path: string) => router.pathname === path;
+  const isActive = (path: string) => pathname === path;
 
   // Handle user menu dropdown
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -53,8 +58,17 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <AppBar position="sticky" sx={{ bgcolor: "white", color: "black", boxShadow: "none" }}>
-        <Toolbar>
+      <AppBar
+        position="sticky"
+        sx={{
+          bgcolor: "white",
+          color: "black",
+          boxShadow: "none",
+          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Toolbar disableGutters>
+          <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center' }}>
           {/* Mobile Menu Button */}
           <IconButton
             edge="start"
@@ -67,43 +81,35 @@ const Navbar: React.FC = () => {
           </IconButton>
 
           {/* Logo and Brand Name */}
-          <Link href="/" passHref legacyBehavior>
-            <Box
-              component="a"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                cursor: "pointer",
-                textDecoration: "none", // Remove underline
-              }}
-            >
-              <img src="/logo.svg" alt="IPA System" style={{ height: 40 }} />
-              <Typography variant="h6" sx={{ ml: 1, fontWeight: "bold", color: "primary.main" }}>
-                IPA System
-              </Typography>
-            </Box>
-          </Link>
+          <MuiLink component={NextLink} href="/" underline="none" sx={{ display: 'flex', alignItems: 'center' }}>
+            <img src="/logo.svg" alt="IPA System" style={{ height: 40 }} />
+            <Typography variant="h6" component="span" sx={{ ml: 1, fontWeight: "bold", color: "primary.main" }}>
+              IPA System
+            </Typography>
+          </MuiLink>
 
           {/* Desktop Menu Items */}
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, ml: 4 }}>
             {menuItems.map(({ text, path }) => (
-              <Link key={path} href={path} passHref legacyBehavior>
-                <Typography
-                  component="a" // Use <a> for proper link behavior
-                  sx={{
-                    mx: 2,
-                    py: 1,
-                    cursor: "pointer",
-                    fontWeight: isActive(path) ? "bold" : "normal",
-                    color: isActive(path) ? "primary.main" : "gray",
-                    borderBottom: isActive(path) ? "2px solid" : "none",
-                    textDecoration: "none", // Remove underline
-                    "&:hover": { color: "primary.dark" },
-                  }}
-                >
-                  {text}
-                </Typography>
-              </Link>
+              <MuiLink
+                key={path}
+                component={NextLink}
+                href={path}
+                underline="none"
+                sx={{
+                  mx: 2,
+                  py: 1,
+                  display: 'inline-flex',
+                  cursor: 'pointer',
+                  fontWeight: isActive(path) ? 'bold' : 'normal',
+                  color: isActive(path) ? 'primary.main' : 'gray',
+                  borderBottom: isActive(path) ? '2px solid' : 'none',
+                  textDecoration: 'none',
+                  '&:hover': { color: 'primary.dark' },
+                }}
+              >
+                <Typography component="span">{text}</Typography>
+              </MuiLink>
             ))}
           </Box>
 
@@ -150,11 +156,12 @@ const Navbar: React.FC = () => {
               <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
             </Menu>
           </Box>
+          </Container>
         </Toolbar>
       </AppBar>
 
       {/* Mobile Drawer */}
-      <Drawer
+          <Drawer
         anchor="left"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
@@ -165,20 +172,22 @@ const Navbar: React.FC = () => {
         <List>
           {menuItems.map(({ text, path, icon }) => (
             <ListItem key={path} disablePadding>
-              <Link href={path} passHref legacyBehavior>
-                <ListItemButton
-                  component="a" // Use <a> for proper link behavior
-                  selected={isActive(path)}
-                  onClick={() => setMobileOpen(false)}
-                  sx={{
-                    "&.Mui-selected": { bgcolor: "primary.light", color: "white" },
-                    textDecoration: "none", // Remove underline
-                  }}
-                >
-                  {icon}
-                  <ListItemText primary={text} sx={{ ml: 1 }} />
-                </ListItemButton>
-              </Link>
+                  <ListItemButton
+                    component={NextLink}
+                    href={path}
+                    selected={isActive(path)}
+                    onClick={() => setMobileOpen(false)}
+                    sx={{
+                      '&.Mui-selected': { bgcolor: 'primary.light', color: 'white' },
+                      textDecoration: 'none',
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {icon}
+                    <ListItemText primary={text} sx={{ ml: 1 }} />
+                  </ListItemButton>
             </ListItem>
           ))}
         </List>

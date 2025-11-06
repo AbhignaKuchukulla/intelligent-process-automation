@@ -1,6 +1,9 @@
+"use client";
+
 import React from "react";
-import Link from "next/link"; // Import Link
-import { useRouter } from "next/router"; // Import useRouter
+import NextLink from "next/link";
+import MuiLink from "@mui/material/Link";
+import { useRouter } from "next/navigation"; // App Router client navigation
 import {
   Box,
   Card,
@@ -15,6 +18,7 @@ import {
   Paper,
   Chip,
   Button,
+  type ChipProps,
 } from "@mui/material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 
@@ -22,7 +26,7 @@ interface Document {
   id: string;
   name: string;
   type: string;
-  status: string;
+  status: 'processed' | 'processing' | 'failed' | 'pending';
   date: string;
 }
 
@@ -31,7 +35,7 @@ interface RecentDocumentsProps {
 }
 
 const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) => {
-  const router = useRouter(); // Use the useRouter hook
+  const router = useRouter(); // App Router client router
 
   // Log documents for debugging
   console.log("Documents:", documents);
@@ -58,17 +62,23 @@ const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) => {
     id: doc.id || `doc-${index}`, // Use existing ID or generate a unique one
   }));
 
-  // Get status color based on document status
-  const getStatusColor = (
-    status: string
-  ): "success" | "warning" | "error" | "info" | "default" => {
-    switch (status.toLowerCase()) {
+  // Status color mapping with type safety
+  const STATUS_COLORS: Record<Document['status'], ChipProps['color']> = {
+    processed: 'success',
+    processing: 'warning',
+    failed: 'error',
+    pending: 'info'
+  };
+
+  const getStatusColor = (status: Document['status']): ChipProps['color'] => {
+    switch (status) {
       case "processed":
         return "success";
       case "processing":
         return "warning";
       case "failed":
         return "error";
+      case "pending":
       default:
         return "info";
     }
@@ -88,11 +98,19 @@ const RecentDocuments: React.FC<RecentDocumentsProps> = ({ documents }) => {
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">Recent Documents</Typography>
-          <Link href="/documents" passHref>
-            <Typography color="primary" sx={{ cursor: "pointer" }}>
-              View All →
-            </Typography>
-          </Link>
+          <MuiLink
+            component={NextLink}
+            href="/documents"
+            color="primary"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              '&:hover': { textDecoration: 'none' }
+            }}
+          >
+            <Typography>View All</Typography>
+            <Typography component="span" sx={{ ml: 0.5 }}>→</Typography>
+          </MuiLink>
         </Box>
         <TableContainer
           component={Paper}

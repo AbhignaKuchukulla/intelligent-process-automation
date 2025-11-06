@@ -1,13 +1,18 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
+from typing import List, Union, Literal, Optional
+from pathlib import Path
 import os
-import fitz  # PyMuPDF for PDFs
-import docx
+import fitz  # PyMuPDF
+from docx import Document
 import pytesseract
 import cv2
 import numpy as np
 import pdfplumber
 from PIL import Image
 from tabulate import tabulate
+from dataclasses import dataclass
+from enum import Enum
 
 app = Flask(__name__)
 

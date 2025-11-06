@@ -1,4 +1,6 @@
-import { useRouter } from 'next/router';
+"use client";
+
+import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { fetchDocumentById } from '../../../services/apiClient';
 import { Box, Typography, CircularProgress, Paper, Alert, Button } from '@mui/material';
@@ -14,7 +16,8 @@ interface Document {
 
 const DocumentViewPage = () => {
   const router = useRouter();
-  const { id } = router.query; // Get the document ID from the URL
+  const params = useParams();
+  const id = params?.id as string | undefined;
   const [document, setDocument] = useState<Document | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +53,7 @@ const DocumentViewPage = () => {
     return (
       <Box display="flex" justifyContent="center" p={4}>
         <Alert severity="error">{error}</Alert>
-        <Button variant="contained" onClick={() => router.reload()} sx={{ mt: 2 }}>
+        <Button variant="contained" onClick={() => window.location.reload()} sx={{ mt: 2 }}>
           Retry
         </Button>
       </Box>

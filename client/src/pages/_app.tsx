@@ -1,9 +1,10 @@
-import type { AppProps } from 'next/app';
+             import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import Navbar from '../components/Navbar';
 import '../styles/globals.css';
 import { ToastProvider } from '../components/Toast/ToastProvider';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { CssBaseline, Container } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 // Create a Material UI theme
 const theme = createTheme({
@@ -34,7 +35,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         <CssBaseline />
         <Navbar />
         <main>
-          <Component {...pageProps} />
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
+            <Component {...pageProps} />
+          </Container>
         </main>
       </ToastProvider>
     </ThemeProvider>
