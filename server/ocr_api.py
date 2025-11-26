@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # ✅ Set up Tesseract path (Update this if needed)
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -90,7 +91,7 @@ def handle_pdf(file_path):
 
 # ✅ Handle DOCX files
 def handle_docx(file_path):
-    doc = docx.Document(file_path)
+    doc = Document(file_path)
     return "\n".join([para.text for para in doc.paragraphs])
 
 # ✅ Handle Image files

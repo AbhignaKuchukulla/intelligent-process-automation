@@ -9,6 +9,97 @@ This repository contains a small full-stack project for document processing and 
 
 This README focusses on how to run the project locally and where to find key pieces.
 
+## Architecture Overview
+
+The system is a polyglot stack composed of:
+
+- Frontend: Next.js (App Router) + TypeScript + MUI for theming.
+- Backend: Express (Node.js) REST API with MongoDB persistence.
+- Microservices: Two Python (Flask) services for Chatbot and OCR tasks.
+- NLP/OCR: Integrated through dedicated endpoints; OCR via Tesseract (Flask) and NLP via Node or Python helpers.
+
+### Frontend (App Router)
+
+The project has been migrated to the Next.js App Router. All new pages live under `client/src/app/`. Legacy `pages/` artifacts have been removed/neutralized. Global layout, theming, and providers are defined in `app/layout.tsx`.
+
+Key frontend elements:
+- `app/layout.tsx`: Root layout providing MUI Theme, Navbar, Toasts.
+- `app/documents/page.tsx`: Documents listing.
+- `app/documents/[id]/page.tsx`: Dynamic document view.
+- `components/DocumentUploader.tsx`: Upload component (backward-compatible with legacy props).
+- `components/DocumentListing.tsx`: Enhanced listing with loading, empty, error states.
+
+### Theming
+
+Material UI theme instantiation occurs client-side (`ThemeProviderClient`) to avoid server runtime issues. Theme options live in `src/theme/theme.ts`. Only import `themeOptions` server-side; create the theme in a client component.
+
+### API Client
+
+`src/services/apiClient.ts` centralizes Axios calls. Interceptors attach auth tokens and unify error notifications.
+
+## Environment Variables
+
+Core variables (create `.env` in root and optionally `client/.env.local`):
+
+| Variable | Purpose |
+|----------|---------|
+| `MONGO_URI` | MongoDB connection string for Express API |
+| `PORT` | Express server port (default 5005 if set differently in server code) |
+| `JWT_SECRET` | JWT signing secret (server) |
+| `NODE_ENV` | Environment mode |
+| `GEMINI_API_KEY` | Chatbot service key (used by `chatbot_api.py`) |
+| `NEXT_PUBLIC_API_URL` | Base URL for frontend to reach Express API (e.g. http://localhost:5005/api) |
+| `NEXT_PUBLIC_CHATBOT_URL` | Frontend URL to Flask chatbot (e.g. http://localhost:5002) |
+| `NEXT_PUBLIC_OCR_URL` | Frontend URL to OCR microservice (e.g. http://localhost:5001) |
+| `CHATBOT_URL` | Server-side URL to chatbot service |
+| `OCR_URL` | Server-side URL to OCR service |
+
+## Scripts
+
+Frontend (`client/`):
+- `npm run dev` — Start Next.js dev server.
+- `npm run build` — Production build.
+- `npm run start` — Start production server.
+
+Backend (`server/`):
+- `npm run dev` — Start Express with auto-reload.
+- `npm run start` — Production start.
+
+Python Microservices (`server/` root):
+- `python chatbot_api.py` — Start chatbot (port 5002).
+- `python ocr_api.py` — Start OCR (port 5001).
+
+## Local Development Flow
+
+1. Start MongoDB.
+2. Launch Express API (`npm run dev` in `server/`).
+3. Launch Flask services (separate terminals).
+4. Launch Next.js frontend (`npm run dev` in `client/`).
+5. Visit `http://localhost:3000/documents`.
+
+## Error Handling & UX
+
+`DocumentListing` shows skeleton + spinner while loading, inline `Alert` + retry on error, and an empty state with a guided upload prompt. A manual refresh button enables quick re-fetch without a full page reload.
+
+## Deployment Notes
+
+Recommended next steps for production readiness:
+- Add Dockerfiles and `docker-compose.yml` tying together services and MongoDB.
+- Harden auth (token refresh, secure cookie settings).
+- Add monitoring (basic health endpoints, logging aggregation).
+- Implement e2e tests (Playwright) for critical flows (upload, view document, chatbot message).
+
+## Contributing
+
+Open issues or PRs describing feature changes. Keep changes small and focused. Avoid introducing server-side theme creation.
+
+## Security
+
+Never commit real secrets. Provide a sanitized `.env.example`. Rotate `JWT_SECRET` in production and restrict network access to MongoDB.
+
+---
+This document reflects the current App Router + MUI setup after modernization.
+
 ## Quickstart (Windows / PowerShell)
 
 1. Copy the example env and fill values:
